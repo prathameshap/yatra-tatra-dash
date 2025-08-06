@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DR Monitoring Dashboard - Demo</title>
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/modals.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <h1>DR Monitoring Dashboard</h1>
+                <p class="header-subtitle">Disaster Recovery System Monitoring & Management</p>
+            </div>
+            
+            <div class="status-bar">
+                <div class="system-health">
+                    <div class="health-indicator" id="healthIndicator"></div>
+                    <span id="systemStatus">System Healthy</span>
+                </div>
+                
+                <div class="status-info">
+                    <div class="last-updated" id="lastUpdated">
+                        Last updated: Just now
+                    </div>
+                    <div class="version-info">v1.0.0</div>
+                </div>
+                
+                <button class="btn btn-success" onclick="refreshDemo()">
+                    Refresh Dashboard
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid -->
+        <main class="dashboard-grid">
+            <!-- Overview Card -->
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title">Overview</div>
+                    <button class="btn" onclick="downloadReport('overview')">Download Report</button>
+                </div>
+                
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-card-value" id="totalResources">24</div>
+                        <div class="metric-card-label">Total Resources</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-value" id="healthyResources">18</div>
+                        <div class="metric-card-label">Healthy Resources</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-value" id="issueResources">4</div>
+                        <div class="metric-card-label">Resources with Issues</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-value" id="totalDiscrepancies">2</div>
+                        <div class="metric-card-label">Active Discrepancies</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Scan Controls -->
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title">Scan Controls</div>
+                    <button class="btn" onclick="downloadReport('scan')">Download Report</button>
+                </div>
+                
+                <div class="scan-controls">
+                    <button class="btn btn-warning" onclick="triggerScan()">
+                        Trigger Full Scan
+                    </button>
+                    <button class="btn" onclick="checkHealth()">
+                        Check System Health
+                    </button>
+                </div>
+                
+                <div class="scan-progress" id="scanProgress" style="display: none;">
+                    <div class="scan-progress-bar" id="scanProgressBar"></div>
+                </div>
+                <div id="scanStatus" class="scan-status"></div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title">Quick Actions</div>
+                    <button class="btn" onclick="downloadReport('summary')">Download Summary</button>
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="btn btn-success" onclick="generateReport()">
+                        Generate Executive Report
+                    </button>
+                    <button class="btn" onclick="viewDiscrepancies()">
+                        View Discrepancies
+                    </button>
+                    <button class="btn" onclick="viewAllResources()">
+                        View All Resources
+                    </button>
+                </div>
+            </section>
+
+            <!-- System Status -->
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title">System Status</div>
+                    <button class="btn" onclick="downloadReport('system')">Download Report</button>
+                </div>
+                
+                <div class="system-metrics">
+                    <div class="metric">
+                        <span class="metric-label">API Status</span>
+                        <span class="status-badge status-healthy" id="apiStatus">Healthy</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Last Scan</span>
+                        <span class="metric-value" id="lastScan">2 minutes ago</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Scan Duration</span>
+                        <span class="metric-value" id="scanDuration">45 seconds</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Resources Table -->
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title">Resource Pairs</div>
+                <div class="card-actions">
+                    <button class="btn" onclick="loadResources()">Refresh</button>
+                    <button class="btn btn-success" onclick="downloadReport('resources')">Download Report</button>
+                </div>
+            </div>
+            
+            <div class="resources-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Primary Resource</th>
+                            <th>DR Resource</th>
+                            <th>Status</th>
+                            <th>Last Check</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resourcesTableBody">
+                        <tr>
+                            <td>RES001</td>
+                            <td>Web Server - Primary</td>
+                            <td>Web Server - DR</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                            <td>2 min ago</td>
+                            <td><button class="btn" onclick="viewResource('RES001')">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>RES002</td>
+                            <td>Database - Primary</td>
+                            <td>Database - DR</td>
+                            <td><span class="status-badge status-warning">Warning</span></td>
+                            <td>5 min ago</td>
+                            <td><button class="btn" onclick="viewResource('RES002')">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>RES003</td>
+                            <td>File Server - Primary</td>
+                            <td>File Server - DR</td>
+                            <td><span class="status-badge status-error">Error</span></td>
+                            <td>1 min ago</td>
+                            <td><button class="btn" onclick="viewResource('RES003')">View</button></td>
+                        </tr>
+                        <tr>
+                            <td>RES004</td>
+                            <td>Load Balancer - Primary</td>
+                            <td>Load Balancer - DR</td>
+                            <td><span class="status-badge status-healthy">Healthy</span></td>
+                            <td>3 min ago</td>
+                            <td><button class="btn" onclick="viewResource('RES004')">View</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Discrepancies -->
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title">Configuration Discrepancies</div>
+                <div class="card-actions">
+                    <button class="btn" onclick="loadDiscrepancies()">Refresh</button>
+                    <button class="btn btn-success" onclick="downloadReport('discrepancies')">Download Report</button>
+                </div>
+            </div>
+            
+            <div class="discrepancies-list" id="discrepanciesList">
+                <div class="discrepancy-item">
+                    <strong>Database Configuration Mismatch</strong>
+                    <p>Primary database has 8GB memory allocation while DR database has 6GB. This may cause performance issues during failover.</p>
+                    <small>Resource: RES002 | Detected: 2 hours ago</small>
+                </div>
+                <div class="discrepancy-item">
+                    <strong>File Server Access Permissions</strong>
+                    <p>DR file server has different user permissions compared to primary server. This could prevent proper data access during recovery.</p>
+                    <small>Resource: RES003 | Detected: 1 hour ago</small>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Resource Details -->
+    <div id="resourceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Resource Details</h2>
+            <div id="resourceDetails">
+                <div class="modal-section">
+                    <div class="modal-section-title">Resource Information</div>
+                    <div class="modal-data-grid">
+                        <div class="modal-data-item">
+                            <div class="modal-data-label">Resource ID</div>
+                            <div class="modal-data-value" id="modalResourceId">RES001</div>
+                        </div>
+                        <div class="modal-data-item">
+                            <div class="modal-data-label">Status</div>
+                            <div class="modal-data-value"><span class="status-badge status-healthy">Healthy</span></div>
+                        </div>
+                        <div class="modal-data-item">
+                            <div class="modal-data-label">Last Check</div>
+                            <div class="modal-data-value">2 minutes ago</div>
+                        </div>
+                        <div class="modal-data-item">
+                            <div class="modal-data-label">Response Time</div>
+                            <div class="modal-data-value">45ms</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-section">
+                    <div class="modal-section-title">Configuration Details</div>
+                    <div class="api-endpoint">
+                        GET /api/resources/RES001/config
+                        <br>
+                        Response: {"memory": "8GB", "cpu": "4 cores", "storage": "500GB"}
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-success" onclick="downloadResourceReport()">
+                    Download Resource Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // Demo functions
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification ${type}`;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function refreshDemo() {
+            showNotification('Dashboard refreshed successfully!');
+            document.getElementById('lastUpdated').textContent = 'Last updated: Just now';
+        }
+
+        function downloadReport(type) {
+            showNotification(`${type.charAt(0).toUpperCase() + type.slice(1)} report downloaded successfully!`);
+        }
+
+        function triggerScan() {
+            const progressBar = document.getElementById('scanProgressBar');
+            const progressDiv = document.getElementById('scanProgress');
+            const statusDiv = document.getElementById('scanStatus');
+            
+            progressDiv.style.display = 'block';
+            statusDiv.textContent = 'Scanning resources...';
+            
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += Math.random() * 15;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    statusDiv.textContent = 'Scan completed successfully!';
+                    setTimeout(() => {
+                        progressDiv.style.display = 'none';
+                        statusDiv.textContent = '';
+                    }, 2000);
+                }
+                progressBar.style.width = progress + '%';
+            }, 200);
+            
+            showNotification('Full scan triggered successfully!');
+        }
+
+        function checkHealth() {
+            showNotification('System health check completed - All systems operational!');
+        }
+
+        function generateReport() {
+            showNotification('Executive report generated successfully!');
+        }
+
+        function viewDiscrepancies() {
+            showNotification('Viewing discrepancies...');
+        }
+
+        function viewAllResources() {
+            showNotification('Loading all resources...');
+        }
+
+        function loadResources() {
+            showNotification('Resources refreshed successfully!');
+        }
+
+        function loadDiscrepancies() {
+            showNotification('Discrepancies refreshed successfully!');
+        }
+
+        function viewResource(id) {
+            document.getElementById('modalResourceId').textContent = id;
+            document.getElementById('resourceModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('resourceModal').style.display = 'none';
+        }
+
+        function downloadResourceReport() {
+            showNotification('Resource report downloaded successfully!');
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('resourceModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Initialize demo
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('Professional DR Dashboard loaded successfully!');
+        });
+    </script>
+</body>
+</html> 

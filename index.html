@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DR Monitoring Dashboard</title>
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/components.css">
+    <link rel="stylesheet" href="styles/modals.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <h1>DR Monitoring Dashboard</h1>
+                <p class="header-subtitle">Disaster Recovery System Monitoring & Management</p>
+            </div>
+            
+            <div class="status-bar">
+                <div class="system-health">
+                    <div class="health-indicator" id="healthIndicator"></div>
+                    <span id="systemStatus">System Healthy</span>
+                </div>
+                
+                <div class="status-info">
+                    <div class="last-updated" id="lastUpdated">
+                        Last updated: Never
+                    </div>
+                    <div class="version-info">v1.0.0</div>
+                </div>
+                
+                <button class="btn btn-success" onclick="Dashboard.refreshDashboard()">
+                    Refresh Dashboard
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Grid -->
+        <main class="dashboard-grid">
+            <!-- Overview Card -->
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title">Overview</div>
+                    <button class="btn" onclick="Reports.downloadOverviewReport()">Download Report</button>
+                </div>
+                
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-card-value" id="totalResources">0</div>
+                        <div class="metric-card-label">Total Resources</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-value" id="healthyResources">0</div>
+                        <div class="metric-card-label">Healthy Resources</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-value" id="issueResources">0</div>
+                        <div class="metric-card-label">Resources with Issues</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-card-value" id="totalDiscrepancies">0</div>
+                        <div class="metric-card-label">Active Discrepancies</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Scan Controls -->
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title">Scan Controls</div>
+                    <button class="btn" onclick="Reports.downloadScanReport()">Download Report</button>
+                </div>
+                
+                <div class="scan-controls">
+                    <button class="btn btn-warning" onclick="ScanManager.triggerFullScan()">
+                        Trigger Full Scan
+                    </button>
+                    <button class="btn" onclick="HealthMonitor.checkSystemHealth()">
+                        Check System Health
+                    </button>
+                </div>
+                
+                <div class="scan-progress" id="scanProgress" style="display: none;">
+                    <div class="scan-progress-bar" id="scanProgressBar"></div>
+                </div>
+                <div id="scanStatus" class="scan-status"></div>
+            </section>
+
+            <!-- Quick Actions -->
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title">Quick Actions</div>
+                    <button class="btn" onclick="Reports.downloadSummaryReport()">Download Summary</button>
+                </div>
+                
+                <div class="quick-actions">
+                    <button class="btn btn-success" onclick="Reports.generateExecutiveReport()">
+                        Generate Executive Report
+                    </button>
+                    <button class="btn" onclick="ResourceManager.viewDiscrepancies()">
+                        View Discrepancies
+                    </button>
+                    <button class="btn" onclick="ResourceManager.viewAllResources()">
+                        View All Resources
+                    </button>
+                </div>
+            </section>
+
+            <!-- System Status -->
+            <section class="card">
+                <div class="card-header">
+                    <div class="card-title">System Status</div>
+                    <button class="btn" onclick="Reports.downloadSystemReport()">Download Report</button>
+                </div>
+                
+                <div class="system-metrics">
+                    <div class="metric">
+                        <span class="metric-label">API Status</span>
+                        <span class="status-badge status-healthy" id="apiStatus">Healthy</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Last Scan</span>
+                        <span class="metric-value" id="lastScan">Never</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Scan Duration</span>
+                        <span class="metric-value" id="scanDuration">N/A</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Resources Table -->
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title">Resource Pairs</div>
+                <div class="card-actions">
+                    <button class="btn" onclick="ResourceManager.loadResources()">Refresh</button>
+                    <button class="btn btn-success" onclick="Reports.downloadResourcesReport()">Download Report</button>
+                </div>
+            </div>
+            
+            <div class="resources-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Primary Resource</th>
+                            <th>DR Resource</th>
+                            <th>Status</th>
+                            <th>Last Check</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resourcesTableBody">
+                        <tr>
+                            <td colspan="6" class="empty-state">
+                                <div class="empty-state-content">
+                                    <p>Click "Refresh" to load resources</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Discrepancies -->
+        <section class="card">
+            <div class="card-header">
+                <div class="card-title">Configuration Discrepancies</div>
+                <div class="card-actions">
+                    <button class="btn" onclick="ResourceManager.loadDiscrepancies()">Refresh</button>
+                    <button class="btn btn-success" onclick="Reports.downloadDiscrepanciesReport()">Download Report</button>
+                </div>
+            </div>
+            
+            <div class="discrepancies-list" id="discrepanciesList">
+                <div class="empty-state-content">
+                    <p>Click "Refresh" to load discrepancies</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal for Resource Details -->
+    <div id="resourceModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="UIManager.closeModal()">&times;</span>
+            <h2>Resource Details</h2>
+            <div id="resourceDetails">
+                <!-- Resource details will be populated here -->
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-success" onclick="Reports.downloadResourceDetailsReport()">
+                    Download Resource Report
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div id="notification" class="notification"></div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/config.js"></script>
+    <script src="js/api-client.js"></script>
+    <script src="js/ui-manager.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/resource-manager.js"></script>
+    <script src="js/scan-manager.js"></script>
+    <script src="js/health-monitor.js"></script>
+    <script src="js/reports.js"></script>
+    <script src="js/utilities.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
