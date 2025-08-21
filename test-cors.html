@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CORS Test - DR Monitoring Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { color: green; }
+        .error { color: red; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>CORS Test - DR Monitoring Dashboard</h1>
+    <p>This page tests if the backend API is accessible from the dashboard.</p>
+    
+    <div class="test-section">
+        <h3>Backend Connection Test</h3>
+        <p>API Base URL: <code id="apiUrl">http://localhost:7071/api</code></p>
+        <button onclick="testConnection()">Test Connection</button>
+        <div id="connectionResult" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>API Endpoint Tests</h3>
+        <button onclick="testEndpoint('/health')">Test /health</button>
+        <button onclick="testEndpoint('/dashboard')">Test /dashboard</button>
+        <button onclick="testEndpoint('/resources')">Test /resources</button>
+        <button onclick="testEndpoint('/discrepancies')">Test /discrepancies</button>
+        <div id="endpointResults" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Dashboard Integration Test</h3>
+        <button onclick="testDashboardIntegration()">Test Dashboard Integration</button>
+        <div id="dashboardResult" class="result"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:7071/api';
+        
+        function showResult(elementId, message, isSuccess = true) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="${isSuccess ? 'success' : 'error'}">${message}</div>`;
+        }
+
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('connectionResult', `✅ Connection successful! Status: ${data.status}`, true);
+                } else {
+                    showResult('connectionResult', `❌ Connection failed with status: ${response.status}`, false);
+                }
+            } catch (error) {
+                showResult('connectionResult', `❌ Connection error: ${error.message}`, false);
+            }
+        }
+
+        async function testEndpoint(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('endpointResults', `✅ ${endpoint} - Success: ${data.status || 'OK'}`, true);
+                } else {
+                    showResult('endpointResults', `❌ ${endpoint} - Failed: ${response.status}`, false);
+                }
+            } catch (error) {
+                showResult('endpointResults', `❌ ${endpoint} - Error: ${error.message}`, false);
+            }
+        }
+
+        async function testDashboardIntegration() {
+            try {
+                // Test if the dashboard can load data from the API
+                const dashboardResponse = await fetch(`${API_BASE_URL}/dashboard`);
+                const resourcesResponse = await fetch(`${API_BASE_URL}/resources`);
+                
+                if (dashboardResponse.ok && resourcesResponse.ok) {
+                    const dashboardData = await dashboardResponse.json();
+                    const resourcesData = await resourcesResponse.json();
+                    
+                    showResult('dashboardResult', 
+                        `✅ Dashboard integration successful!<br>
+                         Dashboard: ${dashboardData.status}<br>
+                         Resources: ${resourcesData.count || 0} found`, true);
+                } else {
+                    showResult('dashboardResult', 
+                        `❌ Dashboard integration failed<br>
+                         Dashboard: ${dashboardResponse.status}<br>
+                         Resources: ${resourcesResponse.status}`, false);
+                }
+            } catch (error) {
+                showResult('dashboardResult', `❌ Dashboard integration error: ${error.message}`, false);
+            }
+        }
+
+        // Auto-test connection on page load
+        window.addEventListener('load', () => {
+            setTimeout(testConnection, 1000);
+        });
+    </script>
+</body>
+</html>
