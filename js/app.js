@@ -626,6 +626,39 @@ Performance Information:
 
 
 
+// Global function for testing Azure authentication
+async function testAzureAuthentication() {
+    try {
+        console.log('Testing Azure authentication...');
+        UIManager.showNotification('Testing Azure authentication...', 'info');
+        
+        const result = await ApiClient.testAzureAuth();
+        
+        if (result && result.status === 'success') {
+            const auth = result.authentication;
+            console.log('Azure authentication successful:', auth);
+            
+            let message = `Azure Auth: ${auth.isAuthenticated ? 'SUCCESS' : 'FAILED'}`;
+            if (auth.isAuthenticated) {
+                message += `\nSubscription: ${auth.subscriptionId}\nTenant: ${auth.tenantId}`;
+            }
+            
+            UIManager.showNotification(message, auth.isAuthenticated ? 'success' : 'error');
+            
+            // Show detailed results in console
+            console.log('Full authentication result:', result);
+        } else {
+            console.error('Azure authentication test failed:', result);
+            UIManager.showNotification('Azure authentication test failed', 'error');
+        }
+    } catch (error) {
+        console.error('Error testing Azure authentication:', error);
+        UIManager.showNotification(`Azure auth test error: ${error.message}`, 'error');
+    }
+}
+
+
+
 // Initialize the application when DOM is loaded
 
 document.addEventListener('DOMContentLoaded', function() {

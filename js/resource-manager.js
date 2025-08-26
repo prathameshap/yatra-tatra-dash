@@ -78,9 +78,9 @@ const ResourceManager = {
 
                     </button>
 
-                    <button class="btn btn-warning" onclick="ResourceManager.forceStatusCheck('${resource.id}')" style="padding: 5px 10px; margin: 2px;">
+                    <button class="btn btn-warning" onclick="ResourceManager.refreshResourceStatus('${resource.id}')" style="padding: 5px 10px; margin: 2px;">
 
-                        Check
+                        Refresh
 
                     </button>
 
@@ -246,36 +246,21 @@ const ResourceManager = {
 
 
 
-    async forceStatusCheck(resourceId) {
-
+    async refreshResourceStatus(resourceId) {
         try {
-
-            UIManager.showNotification(`Checking status for resource ${resourceId}...`);
-
+            UIManager.showNotification(`Refreshing status for resource ${resourceId}...`);
             
-
-            const result = await ApiClient.checkResourceStatus(resourceId);
-
+            const result = await ApiClient.refreshResourceStatus(resourceId);
             
-
-            if (result && result.success) {
-
-                UIManager.showNotification(`Status check completed for ${resourceId}!`);
-
+            if (result && result.status === 'success') {
+                UIManager.showNotification(`Status refresh completed for ${resourceId}!`);
                 this.loadResources(); // Refresh the resources table
-
             } else {
-
-                UIManager.showNotification(`Status check failed for ${resourceId}`, 'error');
-
+                UIManager.showNotification(`Status refresh failed for ${resourceId}`, 'error');
             }
-
         } catch (error) {
-
-            UIManager.showNotification(`Failed to check status for ${resourceId}`, 'error');
-
+            UIManager.showNotification(`Failed to refresh status for ${resourceId}`, 'error');
         }
-
     },
 
 
